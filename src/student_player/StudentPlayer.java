@@ -4,6 +4,8 @@ import boardgame.Move;
 
 import pentago_twist.PentagoPlayer;
 import pentago_twist.PentagoBoardState;
+import pentago_twist.PentagoCoord;
+import pentago_twist.PentagoMove;
 
 /** A player file submitted by a student. */
 public class StudentPlayer extends PentagoPlayer {
@@ -14,7 +16,7 @@ public class StudentPlayer extends PentagoPlayer {
      * associate you with your agent. The constructor should do nothing else.
      */
     public StudentPlayer() {
-        super("xxxxxxxxx");
+        super("260683211");
     }
 
     /**
@@ -29,7 +31,29 @@ public class StudentPlayer extends PentagoPlayer {
 //        MyTools.getSomething();
 
         // Is random the best you can do?
-        Move myMove = boardState.getRandomMove();
+//        Move myMove = boardState.getRandomMove();
+    	
+    	// initialization 
+    	if(boardState.getTurnNumber() == 0 ) {
+    		MyTools.gameConfiguration(boardState, this.player_id);
+    	} 
+    	
+    	if(boardState.getTurnNumber() <= 1) {
+    		Move myMove = boardState.getRandomMove();
+    		if(boardState.isPlaceLegal(new PentagoCoord(1, 1))) {
+    			myMove = new PentagoMove(1, 1, 0, 1, this.player_id);
+    		} else if(boardState.isPlaceLegal(new PentagoCoord(4, 1))) {
+    			myMove = new PentagoMove(4, 1, 0, 1, this.player_id);
+    		} else if(boardState.isPlaceLegal(new PentagoCoord(1, 4)) ) {
+    			myMove = new PentagoMove(1, 4, 0, 1, this.player_id);
+    		} else if(boardState.isPlaceLegal(new PentagoCoord(4, 4))) {
+    			myMove = new PentagoMove(4,4, 0,1, this.player_id);
+    		}
+    		
+    		return myMove;
+    	}	
+    	
+    	Move myMove = MyTools.chooseBestMove(boardState);
 
         // Return your move to be processed by the server.
         return myMove;
