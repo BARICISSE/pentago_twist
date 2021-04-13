@@ -59,23 +59,23 @@ public class MyTools {
 		}
 
 		public TreeNode getParent() {
-			return this.parent;
+			return parent;
 		}
 
 		public List<TreeNode> getChildren() {
-			return this.children;
+			return children;
 		}
 
 		public PentagoMove getPentagoMove() {
-			return this.pentagoMove;
+			return pentagoMove;
 		}
 
 		public PentagoBoardState getPentagoBoardState() {
-			return this.getPentagoBoardState();
+			return pentagoBoardState;
 		}
 
 		public int getScore() {
-			return this.score;
+			return score;
 		}
 
 		public int getVisisted() {
@@ -83,19 +83,19 @@ public class MyTools {
 		}
 
 		public int getWin() {
-			return this.win;
+			return win;
 		}
 
 		public void setScore(int score) {
-			this.score = score;
+			score = score;
 		}
 
 		public void setWin(int win) {
-			this.win = win;
+			win = win;
 		}
 
 		public void setVisited(int visited) {
-			this.visited = visited;
+			visited = visited;
 		}
 
 	}
@@ -104,11 +104,11 @@ public class MyTools {
 	public static void gameConfiguration(PentagoBoardState pentagoBoardState, int pID) {
 		MyTools.pID = pID;
 		if (pentagoBoardState.firstPlayer() == pID) {
-			MyTools.pPiece = Piece.WHITE;
-			MyTools.auxPiece = Piece.BLACK;
+			pPiece = Piece.WHITE;
+			auxPiece = Piece.BLACK;
 		} else {
-			MyTools.pPiece = Piece.BLACK;
-			MyTools.auxPiece = Piece.WHITE;
+			pPiece = Piece.BLACK;
+			auxPiece = Piece.WHITE;
 		}
 	}
 	
@@ -122,7 +122,7 @@ public class MyTools {
 		expandTreeNode(rootNode);
 		
 		//playout
-		getRidOfBadMoves(rootNode.children);
+		getRidOfBadMoves(rootNode.getChildren());
 		
 		// if there is any good moves found while getting rid of bad moves
 		// --> then return it
@@ -182,14 +182,14 @@ public class MyTools {
 	}
 	// UCT
 	private static double getUpperConfidenceTree(TreeNode treeNode) {
-		double utcValue = treeNode.getWin() / treeNode.getVisisted()
-				+ Math.sqrt(2 * Math.log(treeNode.getParent().getVisisted()) / treeNode.getVisisted());
-		return treeNode.getVisisted() == 0 ? Integer.MAX_VALUE : utcValue;
+		
+		return treeNode.visited == 0 ? Integer.MAX_VALUE : treeNode.win / treeNode.visited
+				+ Math.sqrt(2 * Math.log(treeNode.getParent().visited) / treeNode.visited);
 	}
 
 	// decentWithUTC
 	private static TreeNode findPromisingTreeNodeUsingUTC(TreeNode treeNode) {
-		while (treeNodeHasChildren(treeNode)) {
+		while (treeNode.getChildren().size() > 0) {
 			treeNode = Collections.max(treeNode.getChildren(),
 					Comparator.comparing(node -> getUpperConfidenceTree(node)));
 		}
@@ -200,6 +200,7 @@ public class MyTools {
 	// expand Treenode
 
 	private static void expandTreeNode(TreeNode treeNode) {
+		
 		for (PentagoMove pentagoMove : treeNode.getPentagoBoardState().getAllLegalMoves()) {
 			PentagoBoardState boardStateClone = (PentagoBoardState) treeNode.getPentagoBoardState().clone();
 			boardStateClone.processMove(pentagoMove);
@@ -229,14 +230,14 @@ public class MyTools {
 
 		int winner = boardStateClone.getWinner();
 		int payCheck = -1;
-		int funds = (32 - 2 * treeNode.getPentagoBoardState().getTurnNumber() - count) * 1000 + 5000;
+		
 		if (winner == pID) {
-			payCheck = funds;
+			payCheck = (32 - 2 * treeNode.getPentagoBoardState().getTurnNumber() - count) * 1000 + 5000;
 
 		} else if (winner == Board.DRAW) {
 			payCheck = 1000;
 		} else {
-			payCheck = -funds;
+			payCheck = -(32 - 2 * treeNode.getPentagoBoardState().getTurnNumber() - count) * 1000 - 5000;
 			if (count <= 1 && treeNode.parent.children.size() >= 2) {
 				treeNode.parent.children.remove(treeNode); // remove bad moves
 				treeNode.parent = null;
@@ -258,15 +259,15 @@ public class MyTools {
     	
     	for(int j = 0; j< treeNodes.size(); j++) {
     		boolean isPromising = false;
-    		TreeNode tNode = treeNodes.get(j);
     		
-    		if(tNode.pentagoBoardState.getWinner() == pID || tNode.pentagoBoardState.getWinner() == Board.DRAW) {
-    			winnerNode = tNode;
+    		
+    		if(treeNodes.get(j).pentagoBoardState.getWinner() == pID || treeNodes.get(j).pentagoBoardState.getWinner() == Board.DRAW) {
+    			winnerNode = treeNodes.get(j);
     			return; 
     		} 
-    		else if(tNode.pentagoBoardState.getWinner() == 1 - pID) {
+    		else if(treeNodes.get(j).pentagoBoardState.getWinner() == 1 - pID) {
     			if(treeNodes.size() > 3) {
-    				treeNodes.remove(tNode);
+    				treeNodes.remove(treeNodes.get(j));
     				j--;
     				continue;
     			} else {
@@ -275,15 +276,15 @@ public class MyTools {
     		}
     		// check if there is any promising pattern for the player
     		
-        	if(checkEndGameCrisis(tNode.pentagoBoardState, pPiece)) {
+        	if(checkPlayerPotentialToWin(treeNodes.get(j).pentagoBoardState, pPiece)) {
         		isPromising = true;
         	}
         	
         	// go to depth 2
-        	List<PentagoMove> pentagoMoves = tNode.pentagoBoardState.getAllLegalMoves();
+        	List<PentagoMove> pentagoMoves = treeNodes.get(j).pentagoBoardState.getAllLegalMoves();
         	
         	for(PentagoMove pMove: pentagoMoves) {
-        		PentagoBoardState clonedState = (PentagoBoardState) tNode.getPentagoBoardState().clone();
+        		PentagoBoardState clonedState = (PentagoBoardState) treeNodes.get(j).getPentagoBoardState().clone();
         		clonedState.processMove(pMove);
         		
         		//check there is a winner or promising pattern for the opponent
@@ -291,17 +292,17 @@ public class MyTools {
         		
         		if(clonedState.getWinner() == 1 - pID) {
         			if(treeNodes.size() > 1) {
-        				treeNodes.remove(tNode);
+        				treeNodes.remove(treeNodes.get(j));
         			} else {
         				return;
         			}
         			j--;
         			isPromising = false;
         			break;
-        		} else if(checkEndGameCrisis(clonedState, auxPiece)) {
+        		} else if(checkPlayerPotentialToWin(clonedState, auxPiece)) {
         			if(!isPromising) {
         				if(treeNodes.size() > 3) {
-        					treeNodes.remove(tNode);
+        					treeNodes.remove(treeNodes.get(j));
         				} else {
         					return;
         				}
@@ -313,12 +314,12 @@ public class MyTools {
         	
         	// if node is promising make it as winning node
         	if(isPromising) {
-        		winnerNode = tNode;
+        		winnerNode = treeNodes.get(j);
         	}
     	}
     }
 	
-	private static boolean checkEndGameCrisis(PentagoBoardState pentagoBoardState, Piece piece) {
+	private static boolean checkPlayerPotentialToWin(PentagoBoardState pentagoBoardState, Piece piece) {
 		PentagoCoord topLeft = new PentagoCoord(0, 0);
 		PentagoCoord bottomRight = new PentagoCoord(0, 5);
 		
@@ -355,10 +356,6 @@ public class MyTools {
 		point  = unaryOperator.apply(point);
 		
 		return pentagoBoardState.getPieceAt(point) == Piece.EMPTY;
-	}
-
-	private static boolean treeNodeHasChildren(TreeNode treeNode) {
-		return treeNode.getChildren().size() > 0;
 	}
 
 }

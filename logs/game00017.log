@@ -1,0 +1,26 @@
+# Server version 0.08 running on DESKTOP-6LCKN0S:8123
+# Game ID: 17
+# Board class: pentago_twist.PentagoBoard
+# Timeout: 20000
+# First Move Timeout: 30000
+# Date: Tue Apr 13 11:37:09 EDT 2021
+# Player 1: Player-0, '260683211', running on DESKTOP-6LCKN0S
+# Player 2: Player-1, '260683211', running on DESKTOP-6LCKN0S
+START Player-0 260683211
+START Player-1 260683211
+1 1 0 1 0
+4 1 0 1 1
+1 4 0 1 0
+4 4 0 1 1
+0 0 0 0 0
+1 2 0 0 1
+2 3 0 0 0
+5 0 0 0 1
+0 2 0 0 0
+4 0 1 0 1
+0 0 0 0 0
+4 3 2 1 1
+5 5 1 1 0
+4 0 0 0 1
+GAMEOVER WINNER 1
+# Game ended: Tue Apr 13 11:37:24 EDT 2021
